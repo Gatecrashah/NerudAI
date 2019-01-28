@@ -4,13 +4,14 @@ from starlette.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 import uvicorn, aiohttp, asyncio
 from io import BytesIO
+import csv
+import time
 
 from fastai import *
-from fastai.vision import *
+from fastai.text import *
 
-model_file_url = 'https://www.dropbox.com/s/y4kl2gv1akv7y4i/stage-2.pth?raw=1'
+model_file_url = 'https://github.com/Gatecrashah/NerudAI/blob/master/app/models/neruda_finetuned.pth'
 model_file_name = 'model'
-classes = ['black', 'grizzly', 'teddys']
 path = Path(__file__).parent
 
 app = Starlette()
@@ -26,9 +27,12 @@ async def download_file(url, dest):
 
 async def setup_learner():
     await download_file(model_file_url, path/'models'/f'{model_file_name}.pth')
-    data_bunch = ImageDataBunch.single_from_classes(path, classes,
-        tfms=get_transforms(), size=224).normalize(imagenet_stats)
-    learn = create_cnn(data_bunch, models.resnet34, pretrained=False)
+    data_lm = TextLMDataBunch.load(path/'static', 'data_lm')
+    data_bunch = TextList.from_csv(path, csv_name='static/blank.csv', vocab=data_lm.vocab)
+    .random_split_by_pct()
+    .label_for_lm()
+    .databunch(bs=10)
+    learn = language_model_learner(data_bunch, pretrained_model=None)
     learn.load(model_file_name)
     return learn
 
@@ -45,10 +49,34 @@ def index(request):
 @app.route('/analyze', methods=['POST'])
 async def analyze(request):
     data = await request.form()
-    img_bytes = await (data['file'].read())
-    img = open_image(BytesIO(img_bytes))
-    return JSONResponse({'result': learn.predict(img)[0]})
+    return JSONResponse({'result': textResponse(data)})
+
+def textResponse(data):
+    csv_string = learn.predict(data['file'], 25, temperature=0.5, min_p=0.001)
+    time.sleep(2)
+
+    words = csv_string.split()
+    for i, word in enumerate(words):
+        if word == 'xxxbos':
+            words[i] = '<br/>'
+        elif word == 'xxmaj':
+            words[i+1] = words[i+1][0].upper() + words[i+1][1:]
+            words[i] = ''
+        elif word == 'xxup':
+            words[i+1] = words[i+1].upper()
+            words[i] = ''     
+        elif word == 'xxunk' or word == '(' or word == ')' or word == '"':
+            words[i] = ''   
+        elif word == ',':
+            words[i] = ''
+        elif word == '.' or word == '?' or word == '!' or word == ';':
+            words[i-1]+= words[i]
+            words[i] = ''
+        elif word[0] == "'":
+            words[i-1]+= words[i]
+            words[i] = ''
+
+    return ' '.join(words)
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=8080)
-
