@@ -28,10 +28,10 @@ async def download_file(url, dest):
 async def setup_learner():
     await download_file(model_file_url, path/'models'/f'{model_file_name}.pth')
     data_lm = TextLMDataBunch.load(path/'static', 'data_lm')
-    data_bunch = TextList.from_csv(path, csv_name='static/blank.csv', vocab=data_lm.vocab)
-    .random_split_by_pct()
-    .label_for_lm()
-    .databunch(bs=10)
+    data_bunch = (TextList.from_csv(path, csv_name='static/blank.csv', vocab=data_lm.vocab)
+        .random_split_by_pct()
+        .label_for_lm()
+        .databunch(bs=10))
     learn = language_model_learner(data_bunch, pretrained_model=None)
     learn.load(model_file_name)
     return learn
