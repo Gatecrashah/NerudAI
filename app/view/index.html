@@ -1,36 +1,35 @@
 <html lang='en'>
     <head>
         <meta charset='utf-8'>
+        <title>NerudAI - AI generated poems</title>
+        <meta name="viewport" content="width=device-width, intial-scale=1">
         <link rel='stylesheet' href='../static/style.css'>
         <script src='../static/client.js'></script>
     </head>
     <body>
         <div>
             <div class='center'>
-                <div class='title'>NerudAI - AI Poet</div>
-                <div class='content'>
-                    <div class='no-display'>
-                        <input id='file-input'
-                            class='no-display'
-                            type='file'
-                            name='file'
-                            accept='image/*'
-                            onchange='showPicked(this)'>
-                    </div>
-                    <button class='choose-file-button' type='button' onclick='showPicker()'>Select Image</button>
-                    <div class='upload-label'>
-                        <label id='upload-label'>No file chosen</label>
-                    </div>
-                    <div>
-                        <img id='image-picked' class='no-display' alt='Chosen Image' height='200'>
-                    </div>
-                    <div class='analyze'>
-                        <button id='analyze-button' class='analyze-button' type='button' onclick='analyze()'>Analyze</button>
-                    </div>
+            <span class="headline">NerudAI - AI Poet </span>
+            <div class='description'>Let the AI create a poem inspired by Pablo Neruda by typing the first few starting words below. </div>
+            <div class='content'>
+                <div class="row">
+                    <span class="input">
+                        <input id="text-input" onchange='showText(this)' type="text" placeholder="Type the first few word of the poem" maxlength="23">
+                        <span></span>   
+                    </span>
+                </div>
+                <div class='analyze'>
+                    <button id='analyze-button' class='analyze-button' type='button' onclick='analyze()'>Generate Poem</button>
+                </div>
                     <div class='result-label'>
                         <label id='result-label'></label>
                     </div>
                 </div>
+            </div>
+            <div
+                class="navbar">
+                    <a href="https://github.com/Gatecrashah/NerudAI" target="_blank"><img src="static/github-32px.png" target="_blank" /></a>
+                    <a href="https://www.linkedin.com/in/vilikoistinen/" target="_blank"><img src="static/In-2CRev-34px-R.png" target="_blank" /></a>
             </div>
         </div>
     </body>

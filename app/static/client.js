@@ -1,4 +1,5 @@
 var el = x => document.getElementById(x);
+var textData = "";
 
 function showPicker(inputId) { el('file-input').click(); }
 
@@ -12,11 +13,22 @@ function showPicked(input) {
     reader.readAsDataURL(input.files[0]);
 }
 
-function analyze() {
-    var uploadFiles = el('file-input').files;
-    if (uploadFiles.length != 1) alert('Please select 1 file to analyze!');
+function showText(input) {
+    textData = String(input.value);
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        el('text-input').src = e.target.result;
+        el('text-input').className = '';
+    }    
+}
 
-    el('analyze-button').innerHTML = 'Analyzing...';
+function analyze() {
+    // console.log(textData);
+    // var uploadFiles = el('file-input').files;
+    // if (uploadFiles.length != 1) alert('Please select 1 file to analyze!');
+
+    el('analyze-button').innerHTML = 'Generating...';
+    el('result-label').innerHTML = 'Please, refresh and try again, if nothing shows up after 2 minutes.'
     var xhr = new XMLHttpRequest();
     var loc = window.location
     xhr.open('POST', `${loc.protocol}//${loc.hostname}:${loc.port}/analyze`, true);
@@ -26,11 +38,11 @@ function analyze() {
             var response = JSON.parse(e.target.responseText);
             el('result-label').innerHTML = `Result = ${response['result']}`;
         }
-        el('analyze-button').innerHTML = 'Analyze';
+        el('analyze-button').innerHTML = 'Generate Poem';
     }
 
     var fileData = new FormData();
-    fileData.append('file', uploadFiles[0]);
+    fileData.append('file', textData);
     xhr.send(fileData);
 }
 
